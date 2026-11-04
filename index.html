@@ -1,0 +1,657 @@
+<title>黑金画廊工作室</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* 布局：深色画廊长卷，左右留白居中阅读列；图片区域放宽。单一深色主题（与方案“黑金画廊”一致，投屏更稳）。 */
+:root {
+  color-scheme: dark;
+  --ink: #0f0e0d;        /* 页面底：近黑带暖 */
+  --panel: #1a1816;      /* 面板 */
+  --line: #34302b;       /* 分隔线 */
+  --text: #ece6dc;       /* 正文米白 */
+  --muted: #a69d90;      /* 次要文字 */
+  --gold: #c9a562;       /* 拉丝金 */
+  --gold-soft: #c9a5622e;
+  --wine: #a8483e;       /* 酒红：只用于提醒 */
+  --ok: #8fb08a;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+body { background: var(--ink); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.75; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ink); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.read { max-width: 760px; }
+a { color: var(--gold); }
+h1, h2, h3 { font-family: var(--serif); text-wrap: balance; font-weight: 700; line-height: 1.3; margin: 0; }
+h2 { font-size: clamp(26px, 3.4vw, 36px); }
+h3 { font-size: 20px; }
+p { margin: 0; }
+.eyebrow { font-size: 13px; letter-spacing: .18em; color: var(--gold); text-transform: uppercase; }
+section { padding-block: 72px; border-top: 1px solid var(--line); }
+.sec-head { display: grid; gap: 12px; margin-bottom: 32px; }
+.sec-head p { color: var(--muted); max-width: 720px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* 顶部导航 */
+nav.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--ink) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+nav.top .wrap { display: flex; gap: 18px; overflow-x: auto; padding-block: 10px; scrollbar-width: none; }
+nav.top a { color: var(--muted); text-decoration: none; white-space: nowrap; font-size: 14px; }
+nav.top a:hover, nav.top a:focus-visible { color: var(--gold); }
+
+/* Hero */
+.hero { padding-block: 64px 48px; display: grid; gap: 28px; }
+.hero h1 { font-size: clamp(36px, 6vw, 64px); letter-spacing: .02em; }
+.hero h1 em { font-style: normal; color: var(--gold); }
+.hero .lede { font-size: 19px; max-width: 760px; color: var(--text); }
+.hero-img { margin: 0; display: grid; gap: 8px; }
+.hero-img img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.hero-img figcaption { color: var(--muted); font-size: 13px; }
+.hero-main { max-width: 620px; }
+.hero-main img { aspect-ratio: 4 / 5; object-fit: cover; }
+.dec-img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-top: 6px; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.facts div { background: var(--panel); padding: 16px 18px; display: grid; gap: 2px; }
+.facts b { font-family: var(--serif); font-size: 26px; color: var(--gold); font-weight: 700; }
+.facts span { color: var(--muted); font-size: 13px; }
+
+/* 前后对比滑块 */
+.compare { position: relative; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; background: var(--panel); user-select: none; touch-action: pan-y; }
+.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.compare .after-clip { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--pos, 50%)); }
+.compare .handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; background: var(--gold); transform: translateX(-1px); }
+.compare .handle::after { content: "⇆"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: 20px; }
+.compare .tag { position: absolute; top: 12px; padding: 2px 10px; font-size: 13px; background: #000a; color: #fff; }
+.compare .tag.l { left: 12px; } .compare .tag.r { right: 12px; }
+.compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.compare:focus-within .handle { box-shadow: 0 0 0 3px var(--gold-soft); }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.steps figure { margin: 0; display: grid; gap: 8px; }
+.steps img, .ph { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--panel); }
+.steps figcaption { font-size: 14px; color: var(--muted); }
+.steps figcaption b { color: var(--text); font-weight: 500; display: block; }
+.ph { display: grid; place-items: center; border: 1px dashed var(--line); color: var(--muted); font-size: 13px; text-align: center; padding: 8px; }
+.ai-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* 定位 */
+.pos-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.pos-grid div { background: var(--panel); padding: 20px 22px; display: grid; gap: 6px; }
+.pos-grid dt { color: var(--gold); font-size: 13px; letter-spacing: .1em; }
+.pos-grid dd { margin: 0; }
+.goals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 28px; }
+.goal { border-left: 2px solid var(--gold); padding: 4px 0 4px 18px; display: grid; gap: 6px; }
+.goal small { color: var(--muted); }
+
+/* 六个决定 */
+.decisions { display: grid; gap: 0; }
+.dec { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 20px; padding-block: 28px; border-top: 1px solid var(--line); }
+.dec:first-child { border-top: 0; }
+.dec .n { font-family: var(--serif); font-size: 40px; color: var(--gold); line-height: 1; }
+.dec .body { display: grid; gap: 10px; }
+.dec dl { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 6px 14px; margin: 0; }
+.dec dt { color: var(--muted); font-size: 14px; }
+.dec dd { margin: 0; }
+
+/* 每个位置为什么 */
+.why { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.why .plan-box { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); background: var(--panel); padding: 12px; border: 1px solid var(--line); }
+.plan { width: 100%; height: auto; display: block; }
+.pl-room { fill: #1f1c19; stroke: #6d6458; stroke-width: 2; }
+.pl-darkwall { fill: #4a4540; }
+.pl-curtain { fill: #4a4540; }
+.pl-door { fill: none; stroke: #8a8174; stroke-dasharray: 4 3; }
+.pl-set { fill: #2c2926; stroke: #6d6458; }
+.pl-gold { fill: #c9a56255; stroke: var(--gold); }
+.pl-plant { fill: #4f6b46; }
+.pl-rug { fill: #e7dccb22; stroke: #e7dccb66; }
+.pl-chair { fill: #9a5b2e; }
+.pl-work { fill: #2a2622; stroke: #4e483f; stroke-dasharray: 3 2; }
+.pl-desk { fill: #4a3a2c; stroke: #6d5a46; }
+.pl-path { fill: none; stroke: var(--wine); stroke-dasharray: 4 3; }
+.pl-fov { fill: #c9a56214; stroke: #c9a56255; stroke-dasharray: 5 4; }
+.pl-t { fill: var(--text); font-size: 11px; font-family: var(--sans); }
+.pl-cap { fill: var(--muted); font-size: 11px; font-family: var(--sans); }
+.pl-ip { fill: var(--wine); } .pl-me { fill: #4d6d9a; }
+.pl-ipt { fill: #fff; font-size: 9.5px; font-weight: 700; font-family: var(--sans); }
+.pl-cam { fill: #7ea6e0; } .pl-cam-t { fill: #7ea6e0; font-size: 11px; font-weight: 700; font-family: var(--sans); }
+.pl-light { fill: #f2c14e; } .pl-lt { fill: #f2c14e; font-size: 11px; font-weight: 700; font-family: var(--sans); }
+.pl-beam { stroke: #f2c14e; stroke-width: 2; }
+.pl-dim { stroke: var(--wine); stroke-width: 1.2; } .pl-dimt { fill: var(--wine); font-size: 10.5px; font-weight: 700; font-family: var(--sans); }
+.pl-mark circle { fill: var(--ink); stroke: var(--gold); stroke-width: 1.5; transition: fill .15s; }
+.pl-mark text { fill: var(--gold); font-size: 10px; font-weight: 700; font-family: var(--sans); }
+.pl-mark.on circle { fill: var(--gold); } .pl-mark.on text { fill: var(--ink); }
+.legend-row { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 12px; color: var(--muted); padding: 8px 4px 2px; }
+.legend-row i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.reasons { display: grid; gap: 12px; }
+.rs { background: var(--panel); border: 1px solid var(--line); padding: 18px 20px; display: grid; gap: 8px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
+.rs:hover, .rs:focus-visible, .rs.on { border-color: var(--gold); outline: none; }
+.rs h3 { display: flex; gap: 10px; align-items: baseline; font-size: 18px; }
+.rs h3 .k { font-family: var(--sans); font-size: 12px; border: 1px solid var(--gold); color: var(--gold); border-radius: 999px; padding: 0 8px; flex: none; }
+.rs .where { color: var(--gold); font-size: 14px; }
+.rs dl { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 15px; }
+.rs dt { color: var(--muted); }
+.rs dd { margin: 0; }
+
+/* 区域图 */
+.bench { display: grid; gap: 0; }
+.kb { background: var(--panel); border: 1px solid var(--line); border-left: 2px solid var(--gold); padding: 20px 22px; margin-bottom: 8px; display: grid; gap: 10px; }
+.bgroup { font-family: var(--serif); color: var(--gold); margin: 36px 0 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.bgroup:first-of-type { margin-top: 0; }
+.bm { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; padding-block: 28px; border-top: 1px solid var(--line); align-items: start; }
+.bm:first-child { border-top: 0; padding-top: 0; }
+.bm figure { margin: 0; display: grid; gap: 8px; }
+.bm figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #000; }
+.bm figcaption { font-size: 13px; color: var(--muted); }
+.bm .body { display: grid; gap: 10px; }
+.bm .meta { color: var(--muted); font-size: 14px; }
+.bm dl { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px 14px; margin: 0; }
+.bm dt { color: var(--gold); font-size: 14px; }
+.bm dd { margin: 0; }
+.zones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.zones figure { margin: 0; display: grid; gap: 10px; }
+.zones img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--panel); }
+.zones figure.tall img { aspect-ratio: 4 / 5; object-fit: cover; object-position: center 30%; }
+.zones figcaption { display: grid; gap: 4px; }
+.zones figcaption b { font-family: var(--serif); font-size: 18px; }
+.zones figcaption span { color: var(--muted); font-size: 15px; }
+
+/* 参数表 */
+.spec { width: 100%; border-collapse: collapse; font-size: 15px; }
+.spec th, .spec td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.spec th { color: var(--muted); font-weight: 500; font-size: 13px; }
+.spec td:first-child { color: var(--gold); white-space: nowrap; }
+.tbl-scroll { overflow-x: auto; }
+
+/* 采购清单 */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.tabs button { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+.tabs button[aria-selected="true"] { border-color: var(--gold); color: var(--text); background: var(--gold-soft); }
+.budget { display: grid; gap: 8px; margin-bottom: 18px; }
+.bar { height: 10px; background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--gold); }
+.bar i.ref { background: #c9a56255; }
+.budget-txt { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--muted); }
+.budget-txt b { color: var(--text); font-weight: 500; }
+.list { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 980px; }
+.list th { color: var(--muted); font-weight: 500; font-size: 12.5px; text-align: left; padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--ink); }
+.list td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.list td.id { color: var(--gold); font-weight: 700; white-space: nowrap; }
+.list .thumb { width: 52px; height: 52px; object-fit: cover; background: var(--panel); display: block; }
+.list .nm { font-weight: 500; }
+.list .use, .list .spec-t, .list .note { color: var(--muted); font-size: 13px; }
+.list .pill { display: inline-block; font-size: 11.5px; border: 1px solid var(--line); padding: 0 6px; margin-right: 4px; color: var(--muted); white-space: nowrap; }
+.list .pill.must { border-color: var(--gold); color: var(--gold); }
+.list .ref { white-space: nowrap; color: var(--muted); }
+.list input { width: 92px; background: var(--panel); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; font: inherit; font-variant-numeric: tabular-nums; }
+.list input:focus { outline: none; border-color: var(--gold); }
+.list input.filled { border-color: var(--ok); }
+.list .sub { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.list .sub.est { color: var(--muted); }
+.list a { white-space: nowrap; }
+.save-state { font-size: 13px; color: var(--muted); min-height: 1.5em; }
+
+/* 迭代 */
+.iters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+.iters figure { margin: 0; display: grid; gap: 8px; align-content: start; }
+.iters img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--panel); }
+.iters figcaption { font-size: 14px; display: grid; gap: 4px; }
+.iters figcaption b { font-family: var(--serif); font-size: 16px; }
+.iters .pb { color: var(--wine); }
+.iters .fx { color: var(--ok); }
+
+/* 预算优先级 / 答辩 */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+.ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+.stance { display: grid; gap: 0; }
+.stance > div { border-top: 1px solid var(--line); padding-block: 20px; display: grid; gap: 8px; }
+.stance > div:first-child { border-top: 0; padding-top: 0; }
+.qa { display: grid; gap: 0; }
+.qa details { border-top: 1px solid var(--line); padding-block: 14px; }
+.qa summary { cursor: pointer; font-family: var(--serif); font-size: 18px; }
+.qa details p { margin-top: 10px; color: var(--text); }
+.video { aspect-ratio: 16 / 9; max-width: 100%; border: 1px dashed var(--gold); display: grid; place-items: center; text-align: center; padding: 24px; background: var(--panel); }
+.video div { display: grid; gap: 10px; max-width: 560px; }
+.video b { font-family: var(--serif); font-size: 22px; color: var(--gold); }
+.todo li { color: var(--text); }
+.todo li span { color: var(--muted); }
+.lb { position: fixed; inset: 0; z-index: 20; background: #000e; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); cursor: zoom-out; }
+.lb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lb button { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); background: var(--gold); color: var(--ink); border: 0; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
+main img, .wrap img:not(.thumb) { cursor: zoom-in; }
+footer { padding-block: 40px 60px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+
+@media (max-width: 860px) {
+  .why { grid-template-columns: 1fr; }
+  .why .plan-box { position: static; }
+  .zones, .two, .goals, .pos-grid, .bm { grid-template-columns: 1fr; }
+  .iters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .iters { grid-template-columns: 1fr; }
+  .dec { grid-template-columns: 1fr; gap: 6px; }
+  .dec dl, .rs dl { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+section[id], header[id] { scroll-margin-top: 56px; }
+</style>
+
+<nav class="top" aria-label="章节导航"><div class="wrap">
+  <a href="#before-after">改造前后</a><a href="#who">定位</a><a href="#bench">对标参考</a><a href="#logic">设计逻辑</a><a href="#why">每个位置为什么</a>
+  <a href="#zones">房间各区域</a><a href="#camera">机位与灯光</a><a href="#list">采购清单</a><a href="#plan-b">预算与落地</a>
+  <a href="#ai">AI迭代</a><a href="#refs">参考依据</a><a href="#stance">设计主张</a>
+</div></nav>
+
+<header class="wrap hero" id="top">
+  <div class="eyebrow">C ｜ 自选场景 · AI 场景改造提案</div>
+  <h1>30㎡ 空房间，改成<em>黑金画廊</em>工作室</h1>
+  <p class="lede">服务一位有自有服装品牌的女性时尚 IP。她在这里录口播：讲品牌和人物故事、娱乐八卦、前沿时尚新闻，每期穿自家品牌的衣服出镜，讲到穿搭时再切全身。镜头里看得到的布景和灯光，控制在 3000 元以内。</p>
+  <div class="facts">
+    <div><b class="num">5×6 m</b><span>房间 30㎡（5 m × 6 m）</span></div>
+    <div><b class="num" id="fact-total">¥2968</b><span>镜头内布景＋灯光 / 上限 ¥3000</span></div>
+    <div><b>3 人</b><span>IP、IP 助理、生活助理</span></div>
+    <div><b>中景</b><span>口播机位，竖屏 9:16 为主</span></div>
+  </div>
+  <figure class="hero-img hero-main"><img src="img/hero.jpg" alt="主视觉：IP 坐在丝绒单椅上录口播"><figcaption>主视觉 · 口播画面（AI 效果示意）。观众看到的口播、穿搭画面都取自这一张，房间其他角度按同一套布置出图</figcaption></figure>
+</header>
+
+<section id="before-after"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">改造前 → 改造后</div><h2>同一个房间，同一个机位</h2>
+    <p>左右拖动中间的金色手柄对比。改造后的效果图以原房间为基础：墙体、门窗、顶灯的位置都不变，只改背景墙、镜头区地面、软装和灯光。</p></div>
+  <div class="compare" id="cmp" style="--pos:50%">
+    <img src="img/before.jpg" alt="改造前：空房间原图">
+    <div class="after-clip"><img src="img/front.jpg" alt="改造后：AI效果示意定稿"></div>
+    <div class="handle" aria-hidden="true"></div>
+    <span class="tag l">改造前 · 原场景还原</span><span class="tag r">改造后 · AI效果示意</span>
+    <input id="cmp-range" type="range" min="0" max="100" value="50" aria-label="拖动对比改造前后">
+  </div>
+  <p class="ai-note">原场景按我家 30㎡ 房间的实际尺寸和门窗位置用 AI 还原；所有效果图均为 AI 效果示意。</p>
+  <div class="steps">
+    <figure><img src="img/before.jpg" alt="原图"><figcaption><b>① 原场景</b>白墙、浅木地板、右墙一扇窗、只有顶灯</figcaption></figure>
+    <figure><img src="img/white.jpg" alt="3D 模型"><figcaption><b>② 按尺寸搭 3D 模型</b>每件家具的位置、高度都按平面图</figcaption></figure>
+    <figure><img src="img/front.jpg" alt="定稿"><figcaption><b>③ AI 写实化</b>墙纸、遮光帘、软装和灯光</figcaption></figure>
+    <figure><img src="img/mc_h.jpg" alt="口播机位画面"><figcaption><b>④ 口播机位画面</b>观众实际看到的样子</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="walk"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">AI 效果示意漫游</div><h2>走进这个房间</h2></div>
+  <video src="img/walk_C.mp4" controls playsinline preload="metadata" style="width:100%;max-height:80vh;border-radius:8px;background:#000"></video>
+  <p style="font-size:12px;opacity:.6;margin-top:8px">音乐："Gymnopedie No. 1" by Kevin MacLeod (incompetech.com), CC BY 4.0</p>
+</div></section>
+<section id="who"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">定位与需求</div><h2>先想清楚：布景要替 IP 完成什么任务</h2></div>
+  <dl class="pos-grid">
+    <div><dt>服务谁</dt><dd>有自有服装品牌的女性时尚 IP</dd></div>
+    <div><dt>拍什么</dt><dd><b>以口播为主</b>：品牌和人物故事、娱乐八卦、前沿时尚新闻；每期穿自家品牌衣服出镜，讲到穿搭时再切全身</dd></div>
+    <div><dt>想要的人设</dt><dd>懂行、有审美积累的“时尚主理人”，像在自己的工作室里和朋友聊天</dd></div>
+    <div><dt>谁在这里工作</dt><dd>IP、IP 助理（剪辑、监看、准备）、一名生活助理；每天在这里连续拍摄</dd></div>
+  </dl>
+  <div class="goals">
+    <div class="goal"><h3>目标一 · 建立信任</h3><p>观众要觉得“她懂行，说的话可信”。所以背景要有内容感和品位感，不能是空白墙，也不要网红灯牌。</p><small>→ 书架、黑金画、画廊式配色</small></div>
+    <div class="goal"><h3>目标二 · 让衣服被看见</h3><p>她卖的是衣服，版型、裤型、鞋子都得完整露出来，而且衣服要是画面里最显眼的东西。</p><small>→ 去掉桌子、全身镜头、深色背景衬浅色衣服、衣架当品牌货架</small></div>
+  </div>
+</div></section>
+
+<section id="bench"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">对标博主</div><h2>看八个参考怎么拍：借鉴什么、怎么改、为什么</h2><p>参考分三类：时尚口播和穿搭博主（怎么拍人和衣服）、有时尚感的家（怎么搭软装和配色）、奢侈品店（怎么做出贵气）。不管看哪一类，最后都只问一个问题：<b>对口播画面有什么用</b>。我逐条看了画面；只有配音、没有出镜的视频不算（例如 Coco抠搜选包指南）。</p></div>
+  <div class="kb">
+    <h3>看完八个参考，落到口播画面上的四件事</h3>
+    <ol class="ol">
+      <li><b>同一个景，拍三类内容。</b>品牌和人物故事多是横屏长视频（B 站、视频号），娱乐八卦和时尚新闻多是竖屏短视频（抖音、小红书）。景不换，只换景别：讲故事用中景，聊八卦和新闻切到胸口以上的近景，更像面对面聊天。</li>
+      <li><b>开灯就能拍。</b>八卦和新闻讲究快，可能一天录好几条。主光、辅光、机位都固定，地上贴好定位标，IP 坐下、开灯、按录制，不用每次重新布置。</li>
+      <li><b>给字幕和配图留位置。</b>竖屏里人放在中下部，头顶上方留出标题区；背景统一暗，剪辑叠新闻截图、明星图、小窗时都清楚（AHALOLO 一半时间都在插图）。</li>
+      <li><b>背景只负责“可信＋品位”。</b>书柜和画说明她懂行，衣架说明她做品牌；不放灯牌和花哨摆件，因为八卦和新闻的配图本身已经够热闹了。</li>
+    </ol>
+  </div>
+  <h3 class="bgroup">一、时尚口播与穿搭：怎么拍人和衣服</h3>
+  <div class="bench">
+    <div class="bm"><figure><img src="img/ref_aha.jpg" alt="AHALOLO 口播画面"><figcaption>AHALOLO《“假”鼻子、网红妆霸屏热搜？》多个时间点画面</figcaption></figure>
+      <div class="body"><h3>AHALOLO · 时尚评论口播</h3><p class="meta">B 站约 149 万粉丝 · <a href="https://www.bilibili.com/video/BV1kg4y1o7yj" target="_blank" rel="noopener">视频链接</a></p><p>看到的：两人并排坐，胸口以上中景，镜头和眼睛同高；背景是浅灰紫墙加一道线条框，墙上不挂东西；差不多一半时间画面切到秀场图和明星图。</p><dl><dt>借鉴什么</dt><dd>口播要能和品牌图片来回切：背景简洁、颜色统一；人物中景、平视。</dd><dt>我们怎么改</dt><dd>背景只用一面炭黑墙，人头正后方是画，两侧对称放书柜和衣架；口播机位高约 1.2 m，和坐姿眼睛平齐。</dd><dt>目的</dt><dd>IP 讲品牌和人物时会插很多图片、秀场视频，背景越统一，剪辑越顺。</dd><dt>为什么不照搬</dt><dd>她们穿红、蓝这类饱和色，浅墙衬得住；我们的 IP 卖驼色、米白、黑这类中性色，在浅墙前会糊成一片，所以反过来用深墙衬浅衣。</dd></dl></div></div>
+    <div class="bm"><figure><img src="img/ref_this.jpg" alt="当下频道 采访画面"><figcaption>当下频道 THIS《在某书做一名穿搭博主真的那么赚钱吗？》12 个时间点画面</figcaption></figure>
+      <div class="body"><h3>当下频道 THIS · 穿搭博主人物采访</h3><p class="meta">B 站 · <a href="https://www.bilibili.com/video/BV1QC4y147zh" target="_blank" rel="noopener">视频链接</a></p><p>看到的：采访段落里，人坐正中，胸口以上中景；背后是一排挂满衣服的衣架，压得很暗，只透出轮廓；画面里有几根竖直的灯管做线条；人脸是全画面最亮的地方。</p><dl><dt>借鉴什么</dt><dd>“衣服做背景、背景压暗、人最亮”：衣架本身就是时尚身份的证据，不需要别的装饰。</dd><dt>我们怎么改</dt><dd>金色衣架挂 IP 自己品牌的衣服，放在人的右后方；衣架不打正面光，只靠旁边壁灯的余光透出颜色和轮廓。</dd><dt>目的</dt><dd>观众一眼知道“她是做衣服的”，品牌一直在画面里，又不像硬广。</dd><dt>为什么不照搬</dt><dd>画面里露出灯管是纪录片的风格化做法，要多买灯、多走线；我们 3000 元预算里不做，用壁灯和灯带代替“光的线条”。</dd></dl></div></div>
+    <div class="bm"><figure><img src="img/ref_mono.jpg" alt="韩国穿搭评测画面"><figcaption>Monobin.J 韩国穿搭评测，12 个时间点画面</figcaption></figure>
+      <div class="body"><h3>Monobin.J · 韩国穿搭试穿评测</h3><p class="meta">B 站 · <a href="https://www.bilibili.com/video/BV1pV41117E4" target="_blank" rel="noopener">视频链接</a></p><p>看到的：固定横屏全身机位；左边一棵大叶绿植，右边一个挂着本期衣服的衣架，背后白布垂幔；讲到哪件就从衣架上取下来换上；偶尔切到脸部近景展示耳饰；光来自左侧百叶窗。</p><dl><dt>借鉴什么</dt><dd>本期要讲的衣服就挂在画面里，讲到哪件取哪件；植物和衣架一左一右做出前后层次。</dd><dt>我们怎么改</dt><dd>衣架就在 IP 右后方，伸手可取；橄榄树放在右角，和左侧书柜平衡；首饰、面料靠 Pocket 3 手持补近景。</dd><dt>目的</dt><dd>画面本身就在“展示货”，观众看得到下一件是什么，愿意看下去。</dd><dt>为什么不照搬</dt><dd>她背后沙发上堆满衣服和包，显得乱；窗光一天里会变色。我们衣架只挂当期 6–8 件，其余收进镜头外的待拍衣架，并且全用人造光。</dd></dl></div></div>
+    <div class="bm"><figure><img src="img/ref_nana.jpg" alt="Riddlenana 竖屏全身画面"><figcaption>Riddlenana《经典色大衣合集·冬日叠穿分享》竖屏 9:16 画面</figcaption></figure>
+      <div class="body"><h3>Riddlenana · 竖屏全身穿搭</h3><p class="meta">B 站约 16 万粉丝 · <a href="https://www.bilibili.com/video/BV1yu411U7SL" target="_blank" rel="noopener">视频链接</a></p><p>看到的：每套衣服一个竖屏全身镜头，头顶留一点空，脚下露出地面；镜头大约在腰部高度；背景是一整面米白落地帘；画面角上打品牌名，穿插面料特写。</p><dl><dt>借鉴什么</dt><dd>穿搭单独一个竖屏全身机位，头顶到鞋完整；镜头放低，腿不显短；品牌名用字幕，配面料特写。</dd><dt>我们怎么改</dt><dd>穿搭机位放中轴约 2.8 m、高约 1.1 m；拍完全身后，IP 助理手持 Pocket 3 补一组面料和细节特写。</dd><dt>目的</dt><dd>服装品牌最要紧的是版型、长度、面料被看清。</dd><dt>为什么不照搬</dt><dd>她只讲穿搭，背景一面帘子就够；我们的 IP 还要讲品牌和人物，需要书柜和画撑起“懂行”的人设，所以全身画面里保留黑金背景。</dd></dl></div></div>
+    <div class="bm"><figure><img src="img/ref_becky.jpg" alt="黎贝卡 口播画面"><figcaption>黎贝卡 Becky《我的20个香奈儿包包合集》画面</figcaption></figure>
+      <div class="body"><h3>黎贝卡 Becky · 单品讲解</h3><p class="meta">时尚博主，做过自有品牌，和我们服务的 IP 最接近 · <a href="https://www.bilibili.com/video/BV127411Y75G" target="_blank" rel="noopener">视频链接</a></p><p>看到的：一张正红色皮沙发是画面主角，墙是深绿色；她坐着讲，讲到哪只包就拿起来举到胸前；包摆满沙发和地毯；固定全景。</p><dl><dt>借鉴什么</dt><dd>一件颜色鲜明的主椅做记忆点；讲单品时拿在手里举到胸前。</dd><dt>我们怎么改</dt><dd>焦糖丝绒圆背椅固定放在画面正中；左手边的边几上只放一件“本期单品”，讲到时顺手拿起来。</dd><dt>目的</dt><dd>每期衣服都在换，但椅子和画不变，观众刷到就认得是她。</dd><dt>为什么不照搬</dt><dd>包摆满一地，画面杂、人在全景里很小；我们用中景，一次只摆一件单品，让衣服当主角。</dd></dl></div></div>
+  </div>
+  <h3 class="bgroup">二、有时尚感的家：怎么搭软装和配色</h3>
+  <div class="bench">
+    <div class="bm"><figure><img src="img/ref_home.jpg" alt="时尚博主的家 画面"><figcaption>最美中国家《世外小别墅！时尚博主远离城市竟把家造成赤贫风？》多个时间点画面</figcaption></figure>
+      <div class="body"><h3>最美中国家 · 一位时尚博主的家</h3><p class="meta">B 站家居账号 · <a href="https://www.bilibili.com/video/BV1oM4m1m7Qw" target="_blank" rel="noopener">视频链接</a></p><p>看到的：暖灰墙、深咖啡色木柜、米白布艺；客厅里一张橘色沙发上方挂三幅抽象画；斑马纹抱枕、床品做一处图案点缀；灯光都是低处的暖色光斑，没有大白光。</p><dl><dt>借鉴什么</dt><dd>“大面积中性色＋一件饱和色家具＋一组抽象画＋一处图案”，这是时尚人家里高级感的配方；暖光只在局部打亮。</dd><dt>我们怎么改</dt><dd>炭黑墙、黑书柜做大面积中性色；焦糖丝绒椅是唯一的饱和色；一幅黑米金抽象画在头后；地毯的黑白格边就是那一处图案；背景只用灯带和壁灯的暖光点。</dd><dt>目的</dt><dd>让镜头里的空间看起来像“一个有品位的人自己的家”，而不是摄影棚。</dd><dt>为什么不照搬</dt><dd>家居视频拍的是房间，常用广角、靠窗光，人不是主角；我们只学软装搭配和配色，机位和光还是按口播来定。</dd></dl></div></div>
+  </div>
+  <h3 class="bgroup">三、奢侈品店：怎么用平价东西做出贵气</h3>
+  <div class="bench">
+    <div class="bm"><figure><img src="img/ref_jess.jpg" alt="Jessica 沙掌柜 竖屏画面"><figcaption>Jessica沙掌柜奢包《Jessica带你沉浸式逛养马仕》竖屏画面</figcaption></figure>
+      <div class="body"><h3>Jessica 沙掌柜 · 奢侈品店主口播</h3><p class="meta">B 站奢侈品账号，该视频约 81 万播放；视频标注“含虚构演绎”，背景是精品店场景 · <a href="https://www.bilibili.com/video/BV1NXtw6XEPH" target="_blank" rel="noopener">视频链接</a></p><p>看到的：竖屏、腰部以上；她穿黑色西装配金扣；背后是暖木色陈列柜，每一格单独有灯，一格只放一两件，留白很多；顶上是一排排小射灯。</p><dl><dt>借鉴什么</dt><dd>奢侈品店的高级感来自“少放、每格有灯、留白、对称”，以及黑配金的细节。</dd><dt>我们怎么改</dt><dd>书柜开放格每层一条暖光灯条，每层只放 2–3 样（一组书、一只包、一瓶香水，都用 IP 自己的），不塞满；画两侧的壁灯对称；IP 首饰选金色，呼应衣架和壁灯。</dd><dt>目的</dt><dd>用平价东西做出“精品店陈列”的感觉，这是 3000 元做出贵气的关键。</dd><dt>为什么不照搬</dt><dd>精品店的柜子是定制木作加整排射灯，远超预算；我们用成品黑书柜加自粘灯带做出同样的“格格有光”。</dd></dl></div></div>
+    <div class="bm"><figure><img src="img/ref_wsj.jpg" alt="中古奢侈品店画面"><figcaption>王思佳《探秘总价破亿中古店！》多个时间点画面</figcaption></figure>
+      <div class="body"><h3>中古奢侈品店 · 坐着聊单品</h3><p class="meta">B 站约 2.5 万播放 · <a href="https://www.bilibili.com/video/BV17a411L7so" target="_blank" rel="noopener">视频链接</a></p><p>看到的：两人坐在墨绿丝绒沙发上聊天，身后是一整面金色拱形陈列墙，包按颜色一格一格排开，每格有灯；讲到哪只包就拿起来细看，再切近景。</p><dl><dt>借鉴什么</dt><dd>“坐在发光的陈列墙前聊单品”，丝绒沙发和金色陈列架一出现就是奢侈品的语言。</dd><dt>我们怎么改</dt><dd>丝绒椅＋金色衣架＋发光书柜，同样是丝绒、金属加暖光的组合；当期单品放在书柜灯带下，讲到时拿起来，切 Pocket 3 近景。</dd><dt>目的</dt><dd>让观众把 IP 的品牌和“高级”联想在一起，讲的单品也显得贵。</dd><dt>为什么不照搬</dt><dd>整面墙摆满包、颜色很多，适合店铺；我们画面里只留一只包，颜色控制在黑、驼、米、金之内，人和衣服才是主角。</dd></dl></div></div>
+  </div>
+</div></section>
+<section id="logic"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">设计逻辑</div><h2>六个关键决定</h2><p>每一个都按“问题 → 做法 → 好处”来讲。所有东西都对应上面两个目标，不是好看就放。</p></div>
+  <div class="decisions">
+    <div class="dec"><div class="n">1</div><div class="body"><h3>去掉桌子，改成一把单人休闲椅</h3><dl>
+      <dt>问题</dt><dd>常见口播坐在桌子后面，腰以下全被挡住，服装博主最重要的版型、裤型、鞋子恰好在被挡住的部分。</dd>
+      <dt>做法</dt><dd>画面中心只放一把焦糖色丝绒圆背单椅和一个小边几。口播用中景：脸和上半身的衣服看得清，手里拿着讲的单品也能入画；讲穿搭时起身站到椅旁，切到全身机位。</dd>
+      <dt>好处</dt><dd>口播和穿搭两类素材在同一个角落完成；坐着聊天比坐在桌后念稿更像真实分享。不用深沙发：人会陷进去，腰线看不清，衣服会压皱。</dd></dl><img class="dec-img" src="img/front.jpg" alt="单椅＋左手边几＋环边圆地毯，坐着讲、站起来展示都在一个机位"><p class="ai-note">单椅＋左手边几＋环边圆地毯，坐着讲、站起来展示都在一个机位</p></div></div>
+    <div class="dec"><div class="n">2</div><div class="body"><h3>只改一面背景墙：贴炭黑哑光墙纸，不刷漆</h3><dl>
+      <dt>问题</dt><dd>白墙配浅色衣服，人和墙融在一起，画面没有焦点，也没有调性。</dd>
+      <dt>做法</dt><dd>镜头正后方这一面墙贴可移除的炭黑哑光自粘墙纸（约 5 m × 2.7 m），底部保留原来的白色踢脚线；黑金画挂在人头正后上方，两侧各一盏金色筒形壁灯。画面以黑、炭灰、米白、金为主，焦糖色单椅是唯一的重色，衣服里的酒红和橄榄树做少量点缀。</dd>
+      <dt>好处</dt><dd>深色背景让人脸和浅色衣服自然成为画面最亮的地方；黑金是奢侈品店和画廊的视觉语言。不刷漆是因为：房子不一定能动墙面，刷漆要两三天晾干、有气味，以后也难恢复；墙纸一天贴完，撕下来墙还是白的。哑光面不反灯光，墙纸本身的细微纹理在镜头里就是质感，所以不再加线条框。</dd></dl><img class="dec-img" src="img/wall.jpg" alt="镜头正后方一面墙贴炭黑哑光墙纸"><p class="ai-note">口播横屏画面：背景墙贴炭黑哑光墙纸，画和壁灯在人头后方</p></div></div>
+    <div class="dec"><div class="n">3</div><div class="body"><h3>右侧金色衣架，就是品牌货架</h3><dl>
+      <dt>问题</dt><dd>口播背景一成不变，观众会看腻；硬广植入又会破坏真实分享的感觉。</dd>
+      <dt>做法</dt><dd>挂 6–8 件 IP 自家品牌的衣服，按 米白 → 驼 → 黑 → 酒红 排列。</dd>
+      <dt>好处</dt><dd>每期换衣服，背景就自然更新，不用花钱换布景；品牌一直在画面里，但看起来像“她工作室里的衣服”，不像广告；讲到哪件可以直接起身取下来展示。</dd></dl><img class="dec-img" src="img/z_wear.jpg" alt="右墙：待拍衣服按顺序挂好，旁边挂烫机、鞋架"><p class="ai-note">右墙：待拍衣服按顺序挂好，旁边挂烫机、鞋架</p></div></div>
+    <div class="dec"><div class="n">4</div><div class="body"><h3>左侧黑色书柜，放“懂行”的证据</h3><dl>
+      <dt>问题</dt><dd>“懂行、有积累”不能只靠嘴说。</dd>
+      <dt>做法</dt><dd>黑色铁艺书柜，上层开放格、下层带门。开放格每层只放 2–3 样：IP 自己的书（米白和黑色书脊朝外）、香水、一只自家品牌的包；每层加暖光灯条。下柜门里收杂物，镜头里看不到。</dd>
+      <dt>好处</dt><dd>书是阅读量和审美积累最直观的视觉证据；灯条在深色墙上打出一层层暖光点，画面有了前后层次。每层少放、格格有光，是奢侈品店陈列的做法（参照 Jessica 沙掌柜）。书、香水、包都用 IP 自己的，不另买；包是自家品牌的，还多一处品牌露出。</dd></dl><img class="dec-img" src="img/front.jpg" alt="左侧黑色书柜：下柜门收杂物，上层开放格配暖光灯带"><p class="ai-note">左侧黑色书柜：下柜门收杂物，上层开放格配暖光灯带</p></div></div>
+    <div class="dec"><div class="n">5</div><div class="body"><h3>只用人工光：遮光帘＋主光＋辅光＋背景暖光</h3><dl>
+      <dt>问题</dt><dd>自然光随时间和天气变化，上午、下午、阴天拍出来颜色不一样，同一期视频剪在一起会跳色。</dd>
+      <dt>做法</dt><dd>窗户装深灰遮光帘，拍摄时全部拉上。主光按老师标准选型（≥100W、显色≥95、色温含 5600K），加柔光箱；辅光补阴影；书架灯带和壁灯负责背景暖光。</dd>
+      <dt>好处</dt><dd>每一期光线和颜色都一样，这是能持续拍下去的前提；深灰遮光帘和背景墙同色系，画面更沉稳。</dd></dl><img class="dec-img" src="img/curtain.jpg" alt="遮光帘拉上，只用人工光"><p class="ai-note">遮光帘拉上，只用人工光</p></div></div>
+    <div class="dec"><div class="n">6</div><div class="body"><h3>镜头外留给三个人干活：工位、换衣角、熨烫区</h3><dl>
+      <dt>问题</dt><dd>每天要在这里连续拍：换衣服、熨衣服、补妆、剪辑、拆快递。没有地方，这些事就会堆进画面里。</dd>
+      <dt>做法</dt><dd>镜头只看得到房间中间一条，两侧墙边离背景墙 1.5 m 以后都在画外：左墙放梳妆台、换衣屏风、衣柜，右墙放落地镜、挂烫机、待拍衣架，入口墙放鞋架、收纳柜和剪辑台。</dd>
+      <dt>好处</dt><dd>动线是 衣柜 → 换衣 → 化妆 → 上镜 一条线；IP 助理坐在剪辑台后面朝拍摄区，抬头就能看到 IP；从门口到拍摄区留 1 m 通道，人走动不碰灯架。这部分预算另算。</dd></dl><img class="dec-img" src="img/overview.jpg" alt="镜头外的工作区：两侧墙边和入口墙"><p class="ai-note">镜头外的工作区：两侧墙边和入口墙</p></div></div>
+  </div>
+</div></section>
+
+<section id="why"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">每个位置为什么</div><h2>人坐哪、椅子朝哪、灯在哪、相机在哪</h2><p>点右侧任意一条，左边平面图上对应的编号会亮起。每条都写清楚：放在哪、为什么、不这样会怎样。</p></div>
+  <figure class="hero-img" style="margin-bottom:28px"><img src="img/overview.jpg" alt="全景 3D 模型"><figcaption>全景 3D 模型：按平面尺寸搭建，布置时照着它摆</figcaption></figure>
+  <div class="why">
+    <div class="plan-box"><svg viewBox="0 0 430 530" class="plan" role="img" aria-label="5米乘6米房间平面图"><polygon points="246.5,288.5 110.0,54.0 341.0,40" class="pl-fov"/><rect x="40" y="40" width="350" height="420" class="pl-room"/><rect x="40" y="32" width="350" height="8" class="pl-darkwall"/><text x="215.0" y="26" class="pl-cap" text-anchor="middle">背景墙 · 炭黑哑光墙纸</text><rect x="386" y="82.0" width="8" height="126.0" class="pl-curtain"/><text x="404" y="145.0" class="pl-cap" text-anchor="middle" transform="rotate(90 404 145.0)">窗 · 遮光帘</text><path d="M152.0 460 A 59.5 59.5 0 0 1 211.5 400.5 L 152.0 400.5" class="pl-door"/><text x="181.4" y="476" class="pl-cap" text-anchor="middle">门</text><rect x="64" y="40" width="60" height="24" rx="3" class="pl-set"/><text x="94" y="56" class="pl-t" text-anchor="middle">书架</text><rect x="176" y="40" width="77" height="8" rx="3" class="pl-gold"/><text x="215.0" y="62.400000000000006" class="pl-t" text-anchor="middle">黑金画</text><rect x="285" y="46" width="84" height="28" rx="3" class="pl-gold"/><text x="327" y="64" class="pl-t" text-anchor="middle">衣架</text><circle cx="362" cy="92" r="15" class="pl-plant"/><rect x="377" y="218" width="10" height="49" rx="3" class="pl-set"/><text x="362.0" y="246.5" class="pl-t" text-anchor="end">镜</text><circle cx="215" cy="166" r="56" class="pl-rug"/><rect x="190" y="142" width="49" height="49" rx="3" class="pl-chair"/><text x="215" y="170" class="pl-t" text-anchor="middle">单椅</text><circle cx="170" cy="162" r="14" class="pl-gold"/><circle cx="215.0" cy="166.0" r="12" class="pl-ip"/><text x="215.0" y="170.0" class="pl-ipt" text-anchor="middle">IP</text><rect x="40" y="222" width="32" height="56" rx="3" class="pl-work"/><text x="55" y="254" class="pl-t" text-anchor="middle">妆</text><rect x="40" y="288" width="70" height="70" rx="3" class="pl-work"/><text x="75" y="328" class="pl-t" text-anchor="middle">换衣角</text><rect x="40" y="372" width="42" height="84" rx="3" class="pl-work"/><text x="61" y="418" class="pl-t" text-anchor="middle">衣柜</text><rect x="89" y="436" width="42" height="21" rx="3" class="pl-work"/><text x="110" y="450" class="pl-t" text-anchor="middle">鞋架</text><circle cx="372" cy="278" r="8" class="pl-work"/><rect x="352" y="292" width="32" height="70" rx="3" class="pl-work"/><text x="368" y="331" class="pl-t" text-anchor="middle">待拍衣</text><rect x="229" y="425" width="56" height="32" rx="3" class="pl-work"/><text x="257" y="445" class="pl-t" text-anchor="middle">收纳</text><circle cx="254" cy="400" r="12" class="pl-work"/><rect x="299" y="383" width="84" height="42" rx="3" class="pl-desk"/><text x="341" y="408" class="pl-t" text-anchor="middle">剪辑台（面向IP）</text><circle cx="341.0" cy="442.5" r="11" class="pl-me"/><text x="341.0" y="446.5" class="pl-ipt" text-anchor="middle">助理</text><rect x="152.0" y="379.5" width="63.0" height="77.0" class="pl-path"/><polygon points="246.5,275.5 236.5,294.5 256.5,294.5" class="pl-cam"/><text x="260.5" y="310.5" class="pl-cam-t">口播机位 · 1.8m</text><polygon points="215.0,351.0 207.0,367.0 223.0,367.0" class="pl-cam" opacity=".6"/><text x="215.0" y="382.0" class="pl-cam-t" text-anchor="middle" opacity=".8">穿搭机位 · 2.8m</text><line x1="313.0" y1="250.0" x2="278.70000000000005" y2="220.6" class="pl-beam"/><circle cx="313.0" cy="250.0" r="10" class="pl-light"/><text x="313.0" y="235.0" class="pl-lt" text-anchor="middle">主光</text><line x1="117.0" y1="243.0" x2="151.3" y2="216.05" class="pl-beam"/><circle cx="117.0" cy="243.0" r="10" class="pl-light"/><text x="117.0" y="228.0" class="pl-lt" text-anchor="middle">辅光</text><line x1="54.0" y1="40" x2="54.0" y2="166.0" class="pl-dim"/><text x="58.900000000000006" y="113.5" class="pl-dimt">约1.5–1.8m</text><text x="215.0" y="500" class="pl-cap" text-anchor="middle">5 m（宽）× 6 m（深）· 尺寸为估测，待现场复测</text></svg>
+      <div class="legend-row"><span><i style="background:#a8483e"></i>IP</span><span><i style="background:#4d6d9a"></i>IP 助理</span><span><i style="background:#7ea6e0"></i>摄像机</span><span><i style="background:#f2c14e"></i>灯</span><span><i style="background:#c9a562"></i>编号</span></div>
+    </div>
+    <div class="reasons" id="reasons"></div>
+  </div>
+</div></section>
+
+<section id="zones"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">房间各区域</div><h2>同一个 3D 模型，每个角度都一样</h2><p>所有家具先按平面尺寸搭进 3D 模型，再从这个模型里拍出各个角度。正面、左墙、右墙用 AI 把 3D 模型做成照片质感，展示“长什么样”；反打和全景直接用 3D 模型渲染，尺寸和位置最准，用来“照着摆”。人字拼地板贴只铺镜头区，以全景图为准。点击任意图片可以放大。</p></div>
+  <div class="zones">
+    <figure class="tall"><img src="img/mc_v.jpg" alt="口播机位竖屏"><figcaption><b>口播机位 · 竖屏 9:16（主力画幅）</b><span>抖音、小红书用这一版：IP 斜前方约 15°、约 1.8 m、高约 1.2 m，人在正中，脸和上半身衣服都清楚，背后是黑金画和灯带书柜。</span></figcaption></figure>
+    <figure class="tall"><img src="img/full.jpg" alt="穿搭全身画面"><figcaption><b>穿搭画面 · 全身</b><span>讲穿搭时切到全身：从头到鞋完整展示整套衣服，脚下是黑白格边地毯和人字拼地板。</span></figcaption></figure>
+    <figure><img src="img/mc_h.jpg" alt="口播机位横屏"><figcaption><b>口播机位 · 横屏 16:9</b><span>B 站、视频号用这一版：同一机位的中景，画面里是人、椅子和背景布景，所有灯都在画外。</span></figcaption></figure>
+    <figure><img src="img/front.jpg" alt="正面"><figcaption><b>正面 · 从入口看拍摄区</b><span>炭黑墙纸背景、黑色书柜、黑金画和金色壁灯、金色衣架、橄榄树、遮光帘，中间是丝绒单椅、边几和黑白格边地毯；镜头区铺人字拼地板贴（地毯压住的部分不铺）。</span></figcaption></figure>
+    <figure><img src="img/left.jpg" alt="左墙"><figcaption><b>左墙 · 换装化妆区</b><span>辅光 → 带灯镜梳妆台 → 折叠屏风换衣角 → 衣柜，换好衣服、补好妆，直接走到拍摄区坐下。</span></figcaption></figure>
+    <figure><img src="img/right.jpg" alt="右墙"><figcaption><b>右墙 · 窗户与服装管理区</b><span>遮光帘拉上，主光在窗户这一侧；落地镜、挂烫机、待拍衣架依次排开，都在画面外。</span></figcaption></figure>
+    <figure><img src="img/bts.jpg" alt="反打"><figcaption><b>反打 · 3D 模型，从背景墙往入口看</b><span>相机面向 IP；IP 助理在右侧剪辑台后面朝拍摄区坐，显示器背对拍摄区；中间是收纳柜和生活助理的折叠凳，左边是门和 1 m 通道。</span></figcaption></figure>
+    <figure><img src="img/overview.jpg" alt="全景"><figcaption><b>全景 · 3D 模型（尺寸准确，照着摆）</b><span>背景墙、拍摄区、主光与辅光、相机，左墙换装化妆区，右墙服装管理区，入口墙 IP 助理工位和生活助理位置，门和通道。</span></figcaption></figure>
+  </div>
+</div></section>
+
+<section id="camera"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">机位与灯光参数</div><h2>照着摆就能拍</h2><p>距离、高度为估测，到场用卷尺复测。</p></div>
+  <div class="tbl-scroll"><table class="spec">
+    <thead><tr><th>项目</th><th>位置</th><th>参数</th><th>原因</th></tr></thead>
+    <tbody>
+      <tr><td>IP 座位</td><td>房间中轴，离背景墙约 1.5–1.8 m</td><td>椅子朝向口播机位，人靠坐、翘腿，身体略侧</td><td>人和墙之间有距离，影子不落在墙上，背景自然略虚；椅子固定不动，做记忆点（参照黎贝卡的红沙发）</td></tr>
+      <tr><td>口播机位（主）</td><td>IP 斜前方约 15°（偏右），离 IP 约 1.8 m</td><td>镜头高约 1.2 m（和坐姿眼睛差不多高）；Pocket 3 开约 1.5–2 倍；中景，竖屏 9:16 为主</td><td>脸和表情看得清，上半身衣服版型清楚；斜一点比正对更有杂志感；灯都在画外（参照 AHALOLO：胸口以上中景、平视）</td></tr>
+      <tr><td>口播近景（八卦、新闻）</td><td>同一口播机位，不动三脚架</td><td>Pocket 3 拉到约 2.5–3 倍，或 4K 录制后裁切；胸口以上，头顶留出标题区</td><td>聊八卦和新闻更像面对面聊天；机位不动，切景别只要几秒，适合一天录多条</td></tr>
+      <tr><td>穿搭机位（副）</td><td>中轴线，离 IP 约 2.8 m</td><td>镜头高约 1.1 m；Pocket 3 1 倍；全身</td><td>IP 起身站到椅旁展示整套穿搭，头顶到鞋都在画面里；镜头放低，腿不显短（参照 Riddlenana 的竖屏全身）</td></tr>
+      <tr><td>主光</td><td>IP 前右 45°（窗户一侧），离人约 1.5 m</td><td>优篮子 120W＋八角柔光箱；灯头高约 2 m，向下约 30°；色温 4500–5000K</td><td>脸有立体感、眼睛有眼神光；离得近更亮更柔，也不会照亮背景墙</td></tr>
+      <tr><td>辅光</td><td>IP 前左约 1.8 m</td><td>落地平板灯，亮度约主光的一半</td><td>只补阴影，保留明暗，脸不会变平</td></tr>
+      <tr><td>背景暖光</td><td>书架每层、黑金画两侧</td><td>灯带＋壁灯，3000K 暖光</td><td>深色墙上的暖光点让画面有层次，人亮背景暗</td></tr>
+      <tr><td>遮光帘</td><td>右墙窗户</td><td>深灰全遮光，拍摄时全部拉上</td><td>屏蔽自然光，每期颜色一致（Riddlenana 用窗光，不同天拍出来颜色不一样，我们不这样做）</td></tr>
+      <tr><td>收音</td><td>IP 领口</td><td>Pocket 3 全能套装自带无线麦克风；地毯吸音；录制时关挂烫机</td><td>口播清楚，减少空房间回声</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section id="list"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">采购清单 · 全部拼多多</div><h2>每样东西在哪买、多少钱</h2>
+    <p>“实际单价”一栏可以直接填写，填完自动保存，所有人打开都能看到。没填的按“参考价”计入预计合计。参考价是搜索页起价或按规格估算，下单前在拼多多 App 打开链接确认规格价。</p></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-scene" aria-selected="true" data-g="scene">镜头内布景＋灯光（≤3000）</button>
+    <button role="tab" id="tab-av" aria-selected="false" data-g="av">拍摄设备与收音（预算外）</button>
+    <button role="tab" id="tab-work" aria-selected="false" data-g="work">工作与后勤区（预算外）</button>
+  </div>
+  <div class="budget" id="budget"></div>
+  <div class="save-state" id="save-state" aria-live="polite"></div>
+  <div class="tbl-scroll"><table class="list" id="list-table">
+    <thead><tr><th>编号</th><th></th><th>物品 / 用途</th><th>规格</th><th>来源</th><th>数量</th><th>参考价</th><th>实际单价</th><th>小计</th><th>链接</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div></section>
+
+<section id="plan-b"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">预算与落地</div><h2>先买什么，钱不够先保什么</h2></div>
+  <div class="two">
+    <div><h3>采购顺序</h3><ol class="ol" style="margin-top:12px">
+      <li>贴墙纸、装遮光帘、买主光：这一步做完，光和背景就定了</li>
+      <li>单椅、地毯、定制画和壁灯：做完这一步，画面已经成立</li>
+      <li>书柜、衣架、灯条：补足丰富度</li>
+      <li>书、香水、包用 IP 自己的：到货后试拍，看哪里空再从家里补</li>
+      <li>镜头外工作区：按实际使用逐步添置</li></ol></div>
+    <div><h3>预算砍半时的保留顺序</h3><ol class="ol" style="margin-top:12px">
+      <li>主光＋遮光帘（光不稳，什么都白搭）</li>
+      <li>背景墙纸</li>
+      <li>单椅＋地毯</li>
+      <li>定制画＋壁灯</li>
+      <li>书柜、衣架；道具最后，可以先用 IP 自己的东西</li></ol></div>
+  </div>
+</div></section>
+
+<section id="ai"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">AI 迭代过程</div><h2>初版 → 问题 → 修改 → 定稿</h2><p>工具：Z-Image Turbo（本机运行，出效果图）、Blender（搭 3D 模型，保证各角度一致）。每一轮的提示词和图片都保存在提案文件夹里。</p></div>
+  <div class="iters">
+    <figure><img src="img/it1.jpg" alt="简笔示意"><figcaption><b>① 五种风格示意图</b><span class="pb">问题：太简单，看不出真实效果</span><span class="fx">修改：改出写实效果图</span></figcaption></figure>
+    <figure><img src="img/it2.jpg" alt="写实风格"><figcaption><b>② 写实五种风格</b><span class="pb">选中“黑金画廊”</span><span class="fx">修改：深化这一种风格</span></figcaption></figure>
+    <figure><img src="img/it3.jpg" alt="半身版"><figcaption><b>③ 黑金半身五版（带桌子）</b><span class="pb">问题：背景不够丰富；定制柜、玻璃柜超预算</span><span class="fx">修改：成品书架＋一幅画，控制在 3000 内</span></figcaption></figure>
+    <figure><img src="img/it4.jpg" alt="去桌子初版"><figcaption><b>④ 去掉桌子，全身版</b><span class="pb">这一版的人物气质、同色系穿搭和取景最好</span><span class="fx">决定：后面所有画面都以这一版为基准</span></figcaption></figure>
+    <figure><img src="img/it5.jpg" alt="图生图初版"><figcaption><b>⑤ 基于原图的图生图初版</b><span class="pb">问题：背景墙还是白的，多出一把椅子</span><span class="fx">修改：先在原图上把墙改深色，再图生图；限定“只有一把椅子”</span></figcaption></figure>
+    <figure><img src="img/it6.jpg" alt="自然光版"><figcaption><b>⑥ 深色墙定稿（纱帘透光）</b><span class="pb">问题：靠自然光，每天颜色会变</span><span class="fx">修改：加深灰遮光帘，只用人工光</span></figcaption></figure>
+    <figure><img src="img/it7.jpg" alt="不一致的多角度图"><figcaption><b>⑦ 多角度 AI 图</b><span class="pb">问题：每张图单独生成，门、桌子、相机朝向各不相同；背景偏单调</span><span class="fx">修改：用 Blender 按尺寸搭 3D 模型，所有角度从同一模型出图；背景加同色线条框，植物换橄榄树</span></figcaption></figure>
+    <figure><img src="img/it8.jpg" alt="远景主机位"><figcaption><b>⑧ 主机位用了远景</b><span class="pb">问题：口播离人太远、看不清表情，画面里还露出了灯</span><span class="fx">修改：口播改中景、斜前方约 15°；另设全身穿搭机位；椅子换丝绒圆背，模特统一驼色同色系穿搭</span></figcaption></figure>
+    <figure><img src="img/it9.jpg" alt="灰墙版口播画面"><figcaption><b>⑨ 以最喜欢的一版为基准</b><span class="pb">问题：灰墙版画面偏平，左侧空，不够惊艳</span><span class="fx">修改：回到第④版为底图迭代：墙加深到近黑、左侧换黑色灯带展示、边几移到左手边换黑台面、环边地毯；3D 同步改布局</span></figcaption></figure>
+    <figure><img src="img/it10.jpg" alt="和主视觉不是同一个景的横屏"><figcaption><b>⑩ 所有画面统一成同一个景</b><span class="pb">问题：横屏和其他角度单独出图，书柜、画、边几、地毯、地板和主视觉不一样</span><span class="fx">修改：观众看到的画面全部取自主视觉；3D 按主视觉重建，画、地毯、地板直接用主视觉里的纹理；墙改贴墙纸不刷漆，镜头区铺人字拼地板贴</span></figcaption></figure>
+  </div>
+</div></section>
+
+<section id="refs"><div class="wrap read">
+  <div class="sec-head"><div class="eyebrow">参考依据</div><h2>背景怎么做才不显廉价</h2><p>我查了视频布景的公开资料，几条原则在不同来源里反复出现，方案的背景设计按这些原则来。</p></div>
+  <ol class="ol">
+    <li><b>人离墙要有距离，背景才有纵深。</b>人和墙之间留出几步，背景自然略虚，人更突出。本方案：人离背景墙 1.5–1.8 m。<br><a href="https://subscribr.ai/youtube-strategy/youtube-video-background-tips" target="_blank" rel="noopener">Subscribr：YouTube 背景技巧</a> · <a href="https://primalvideo.com/guides/youtube-studio-background-ideas/" target="_blank" rel="noopener">Primal Video：工作室背景</a></li>
+    <li><b>背景要单独打光。</b>给背景单独的灯，人才不会和背景融在一起。本方案：书架灯带＋壁灯。<br><a href="https://subscribr.ai/youtube-strategy/choose-youtube-backdrop-not-cheap" target="_blank" rel="noopener">Subscribr：不显廉价的背景</a></li>
+    <li><b>背景要有质感和层次，但不能杂乱。</b>哑光表面防反光，书架、植物、灯带做层次，道具少而精。本方案：哑光炭黑墙纸、灯带书柜、橄榄树。<br><a href="https://subscribr.ai/youtube-strategy/choose-youtube-backdrop-not-cheap" target="_blank" rel="noopener">Subscribr：不显廉价的背景</a> · <a href="https://uppbeat.io/blog/creators/orbit-for-creators-6-tips-for-designing-your-ideal-creator-setup" target="_blank" rel="noopener">Uppbeat：创作者布景 6 条建议</a></li>
+    <li><b>服装类内容用中性背景衬托衣服。</b>背景色调中性，衣服才是主角。本方案：黑、炭灰、米白、金。<br><a href="https://www.erase.bg/blog/best-bg-for-fashion-photography" target="_blank" rel="noopener">Erase.bg：时尚拍摄背景选择</a></li>
+    <li><b>衣橱和穿搭本身就是时尚内容的看点。</b>衣橱参观是 YouTube 时尚频道的固定内容类型，所以把品牌衣架放进背景。<br><a href="https://blog.youtube/culture-and-trends/apartment-tours/" target="_blank" rel="noopener">YouTube 官方博客</a> · <a href="https://www.adobe.com/creativecloud/video/hub/ideas/fashion-youtube-video-ideas" target="_blank" rel="noopener">Adobe：时尚视频选题</a></li>
+  </ol>
+</div></section>
+
+<section id="stance"><div class="wrap read">
+  <div class="sec-head"><div class="eyebrow">设计主张</div><h2>我为什么这样设计</h2><p>这套方案背后是六个判断。道具可以换，这六条不变。</p></div>
+  <div class="stance">
+    <div><h3>一、我先想清楚这个空间替谁赚钱</h3><p>她靠口播建立信任，再卖自己的衣服。所以第一优先级是口播：脸和表情看得清、声音听得清、背景一看就“懂行”；第二是让衣服被看见：我去掉了桌子，加了全身机位，把衣架做成背景里的品牌货架。好看排在后面，服务她的内容和生意排在前面。</p></div>
+    <div><h3>二、我只在镜头看得见的地方花钱</h3><p>镜头只拍得到房间中间一条。3000 元我全部压在这一条里：背景墙纸、镜头区地板贴、单椅和地毯、画和壁灯、主光。镜头外的工作区按实际需要逐步添置，单独算账。</p></div>
+    <div><h3>三、我把光放在第一位</h3><p>持续更新靠的是每一期画面都一样。所以我用遮光帘屏蔽自然光，主光按 120W、显色 95 以上的标准选。预算再紧，主光和遮光帘也不砍。</p></div>
+    <div><h3>四、我设计的是每天都能开工的工作室，不是一张好看的图</h3><p>这里每天有三个人在干活。我把动线排成 衣柜 → 换衣 → 化妆 → 上镜 一条线，把剪辑工位放在相机后面，让 IP 助理能一边剪一边监看。开工不用重新搭，收工不用收拾半天。</p></div>
+    <div><h3>五、我用“人亮、背景暗”来控制视线</h3><p>炭黑背景墙加点状暖光，让人脸和浅色衣服成为画面里最亮的地方。观众的视线会自然落在她和衣服上，背景只负责提供品位和信息。</p></div>
+    <div><h3>六、我提前想好了落地时会遇到的问题</h3><p>深色墙让画面偏暗，所以主光功率留足了余量；镜子放在画外、画选哑光帆布，避免反光；壁灯 3000K 和主光色温不同，主光调到 4500–5000K；墙面不刷漆，用可移除的自粘墙纸，搬走时撕掉；贴之前先在墙角小块试贴 24 小时，确认撕下不掉白灰。</p></div>
+  </div>
+</div></section>
+
+
+
+
+
+<div class="lb" id="lb" hidden role="dialog" aria-label="放大查看"><img id="lb-img" alt=""><button type="button" id="lb-close" aria-label="关闭">×</button></div>
+<footer><div class="wrap">C ｜ 自选场景 · 所有效果图为 AI 效果示意 · 商品价格以拼多多下单页为准 · 核验日期 2026-11-04</div></footer>
+
+<script>
+const LIST = {"scene": [{"id": "C01", "name": "炭黑哑光自粘墙纸（可移除）", "use": "背景墙（镜头正后方约 5 m 宽）：白墙变炭黑，不刷漆", "src": "新购", "pri": "必须有", "spec": "黑色哑光自粘墙纸，宽幅，约 13.5㎡＋10% 损耗；先在墙角试贴 24 小时确认撕下不掉灰", "qty": 1, "ref": 95, "shop": "拼多多", "gid": "1016039710788", "note": "起价19为单卷；所需卷数与按该规格估约95元。备选 1016047819100（起价19，已抢5005件）", "verified": null, "thumb": "p/C01.jpg"}, {"id": "C23", "name": "人字拼自粘地板贴（镜头区）", "use": "背景墙前到椅子前方、镜头看得到的地面（约 7.6㎡，地毯压住的部分不铺），做出主视觉里的人字拼木地板", "src": "新购", "pri": "必须有", "spec": "2mm 加厚 PVC 鱼骨拼自粘地板贴，浅橡木色，按单片约 0.135㎡ 计约 56 片（含损耗）", "qty": 56, "ref": 5.09, "shop": "拼多多", "gid": "891368541893", "note": "起价5.09/片，本店已拼49万+件；单片尺寸以下单页为准；接缝留在镜头外", "verified": null, "thumb": "p/C23.jpg"}, {"id": "C03", "name": "黑色铁艺书柜（上开放格＋下柜门）", "use": "背景左侧：上层开放格配暖光灯带，每层只放 2–3 样；下柜门收杂物，对应主视觉的黑色书柜", "src": "新购", "pri": "必须有", "spec": "黑色，上层开放格、下层带门，宽约 80–120cm", "qty": 1, "ref": 284, "shop": "拼多多", "gid": "727869858798", "note": "起价284；尺寸规格价以下单页为准。原黑色层板书架 1023134068572（约120）作为省钱备选", "verified": null, "thumb": "p/C03.jpg"}, {"id": "C04", "name": "金色落地挂衣架", "use": "背景右侧：挂6–8件IP自家品牌衣服，兼品牌展示位", "src": "新购", "pri": "必须有", "spec": "拉丝金，管径28mm，宽约120cm", "qty": 1, "ref": 109, "shop": "拼多多·情缘创意服装货架", "gid": "992931507669", "note": "页面限时价88.95为最小规格；120cm按该规格估约109元", "verified": null, "thumb": "p/C04.jpg"}, {"id": "C05", "name": "暖光橱柜灯条", "use": "书架每层：做出暖光点和层次", "src": "新购", "pri": "必须有", "spec": "无线自粘充电款，选暖光（3000K）", "qty": 4, "ref": 20.6, "shop": "拼多多", "gid": "889115616124", "note": "起价20.6/条", "verified": null, "thumb": "p/C05.jpg"}, {"id": "C06", "name": "来图定制帆布装饰画（主视觉同款）", "use": "背景中央（人物头后）：直接打印主视觉里的黑米金抽象画，效果图和实物一致", "src": "新购", "pri": "必须有", "spec": "帆布画芯＋黑色细框，竖版 80×120cm；用高清版画稿下单", "qty": 1, "ref": 150, "shop": "拼多多", "gid": "998231393627", "note": "起价16为小尺寸；80×120带框按该规格估约150元。原手绘金箔画 1012700620148（约260）作为备选", "verified": null, "thumb": "p/C06.jpg"}, {"id": "C07", "name": "黄铜筒形插电壁灯", "use": "装饰画两侧：对称的暖光点，对应主视觉的金色筒灯", "src": "新购", "pri": "必须有", "spec": "黄铜色，插电带开关，免布线，暖光", "qty": 2, "ref": 61.37, "shop": "拼多多", "gid": "1015694847800", "note": "起价61.37/个；形状与主视觉接近（筒形），款式以下单页为准。原玻璃罩壁灯 831962531356（35.15）作为省钱备选", "verified": null, "thumb": "p/C07.jpg"}, {"id": "C12", "name": "焦糖色丝绒圆背单人沙发椅", "use": "画面中心：IP 靠坐聊天、翘腿也能露出鞋；丝绒圆背有包裹感，和驼色西装同色系更显气质", "src": "新购", "pri": "必须有", "spec": "焦糖色丝绒，竖条纹圆背，坐高约42–45cm", "qty": 1, "ref": 509, "shop": "拼多多", "gid": "969932962150", "note": "起价509；颜色与规格价以下单页为准。原选皮质椅（1006592742800，¥359.2）作为备选", "verified": null, "thumb": "p/C12.jpg"}, {"id": "C13", "name": "金色铁艺圆边几（黑色台面）", "use": "椅子左手边：放骨瓷杯和本期单品；金色框架和衣架、壁灯呼应", "src": "新购", "pri": "必须有", "spec": "金色框架＋黑色圆台面，高约 55cm", "qty": 1, "ref": 50, "shop": "拼多多", "gid": "974709805141", "note": "起价43.56；黑台面金框款按该规格估约50元", "verified": null, "thumb": "p/C13.jpg"}, {"id": "C22", "name": "纯白骨瓷咖啡杯碟", "use": "边几上：替代纸杯，小细节提升精致感", "src": "新购", "pri": "可后补", "spec": "简约纯白骨瓷，杯+碟", "qty": 1, "ref": 13.68, "shop": "拼多多", "gid": "873765982839", "note": "起价13.68", "verified": null, "thumb": "p/C22.jpg"}, {"id": "C14", "name": "黄麻圆地毯（黑白格边）", "use": "椅子下：定住座位区、吸收回声；黑白格边对应主视觉", "src": "新购", "pri": "必须有", "spec": "圆形直径 160cm，黄麻编织，黑白格边", "qty": 1, "ref": 100, "shop": "拼多多", "gid": "978246267209", "note": "起价40为小尺寸；Ø160按该规格估约100元", "verified": null, "thumb": "p/C14.jpg"}, {"id": "C15", "name": "仿真橄榄树", "use": "背景右角：柔化墙角和遮光帘边缘，叶片细小轻盈，比大叶植物更有时尚杂志感", "src": "新购", "pri": "必须有", "spec": "约1.6m高，细枝小叶", "qty": 1, "ref": 160, "shop": "拼多多", "gid": "769088872578", "note": "起价120为小规格；1.6m按该规格估约160元", "verified": null, "thumb": "p/C15.jpg"}, {"id": "C16", "name": "哑光黑色高筒花盆", "use": "套在C15原盆外，和背景墙同色系", "src": "新购", "pri": "可后补", "spec": "哑光黑陶瓷炮筒盆，口径约30cm", "qty": 1, "ref": 66, "shop": "拼多多", "gid": "861644710287", "note": "起价66", "verified": null, "thumb": "p/C16.jpg"}, {"id": "C18", "name": "免打孔挂画钩", "use": "挂C06", "src": "新购", "pri": "必须有", "spec": "杜邦无痕挂画钩", "qty": 1, "ref": 11, "shop": "拼多多", "gid": "959807559429", "note": "起价11", "verified": null, "thumb": "p/C18.jpg"}, {"id": "C19", "name": "深灰遮光窗帘", "use": "右墙窗户：拍摄时全部拉上，屏蔽自然光，保证每期光线和颜色一致；深灰与背景墙同色系", "src": "新购", "pri": "必须有", "spec": "全遮光挂钩式成品帘，选深灰色，按窗宽约2m×高2.6m两片", "qty": 1, "ref": 80, "shop": "拼多多", "gid": "808685457014", "note": "起价41.2；按所需尺寸估约80元。原纱帘保留，不拍摄时用", "verified": null, "thumb": ""}, {"id": "C20", "name": "运费/差价预留", "use": "—", "src": "—", "pri": "—", "spec": "大部分商品包邮，偏远地区或补差价", "qty": 1, "ref": 20, "shop": "—", "gid": "", "note": "大部分商品包邮，按核验结果填写", "verified": null, "thumb": ""}, {"id": "L01", "name": "主光：优篮子 VL120Bi 双色温 120W", "use": "人物前右45°（窗户一侧）主光；符合老师标准：≥100W、色温含5600K", "src": "新购", "pri": "必须有", "spec": "【双色温】120W V口COB灯 +【带】电源适配器", "qty": 1, "ref": 575, "shop": "拼多多·Ulanzi旗舰店（官方授权）", "gid": "613921353798", "note": "券后575/券前578（3元店铺会员券）；2026-11-03已在规格面板核验", "verified": 575, "thumb": ""}, {"id": "L02", "name": "柔光箱：志捷 FS-Pro 八角保荣口", "use": "装在L01上柔化光线，让脸和衣服的光更均匀", "src": "新购", "pri": "必须有", "spec": "八角，保荣口快装", "qty": 1, "ref": 130.9, "shop": "拼多多", "gid": "1017071126750", "note": "起价130.9；尺寸在App核验", "verified": null, "thumb": ""}, {"id": "L03", "name": "灯架：志捷 2米加粗", "use": "支撑L01", "src": "新购", "pri": "必须有", "spec": "2米加粗加厚", "qty": 1, "ref": 49.3, "shop": "拼多多", "gid": "1017476677715", "note": "起价49.3", "verified": null, "thumb": ""}, {"id": "L04", "name": "辅光：落地LED平板补光灯", "use": "人物前左补光，减轻阴影（亮度约主光一半）", "src": "新购", "pri": "必须有", "spec": "方形平板，色温亮度可调，含落地支架", "qty": 1, "ref": 75.3, "shop": "拼多多", "gid": "688720070421", "note": "起价75.3；含支架规格在App核验", "verified": null, "thumb": ""}], "av": [{"id": "A01", "name": "拍摄设备：大疆 Osmo Pocket 3 全能套装", "use": "主机位：口播与全身穿搭拍摄。1英寸大底、人脸跟踪、一键竖拍，不需要专人掌机；全能套装含无线麦克风发射器", "src": "新购", "pri": "必须有", "spec": "全能套装（含DJI Mic 2发射器、手柄、广角镜等）", "qty": 1, "ref": 2799, "shop": "拼多多·【大疆】店铺", "gid": "915781827710", "note": "页面起价2098为标准版；全能套装按该规格估约2799元。广角镜头，离人约2.8m拍全身，避免贴近拍摄变形", "verified": null, "thumb": ""}, {"id": "A02", "name": "麦克风：大疆 DJI Mic Mini", "use": "备用收音（若买Pocket 3全能套装可不买）", "src": "新购", "pri": "可后补", "spec": "一拖一", "qty": 0, "ref": 161, "shop": "拼多多", "gid": "975231046901", "note": "Pocket 3全能套装已含麦克风，本项数量记0，仅作备选", "verified": null, "thumb": ""}, {"id": "A03", "name": "提词器：志捷 T1", "use": "口播时看稿，眼神对镜头", "src": "新购", "pri": "可后补", "spec": "手机/相机通用", "qty": 1, "ref": 159, "shop": "拼多多", "gid": "988905183932", "note": "起价159", "verified": null, "thumb": ""}], "work": [{"id": "W01", "name": "剪辑工作台", "use": "入口墙右侧：IP助理坐在桌后、面向IP剪辑和监看，显示器背面朝向拍摄区，屏幕光不进画", "src": "新购", "pri": "必须有", "spec": "约120×60cm", "qty": 1, "ref": 123, "shop": "拼多多·诚美优品", "gid": "826135787995", "note": "起价123；120cm规格价以下单页为准", "verified": null, "thumb": ""}, {"id": "W02", "name": "人体工学电脑椅", "use": "剪辑工位", "src": "新购", "pri": "必须有", "spec": "带腰托", "qty": 1, "ref": 109, "shop": "拼多多·YHP", "gid": "1013151519870", "note": "起价109", "verified": null, "thumb": ""}, {"id": "W03", "name": "抽屉式收纳柜（带轮）", "use": "入口墙中段：本期单品、配饰、线材、电池、补妆用品分类收纳", "src": "新购", "pri": "必须有", "spec": "多层抽屉，带滑轮", "qty": 1, "ref": 49.5, "shop": "拼多多", "gid": "157684901533", "note": "起价49.5", "verified": null, "thumb": ""}, {"id": "W04", "name": "折叠屏风", "use": "左墙：换衣角，IP换装隐私", "src": "新购", "pri": "必须有", "spec": "落地折叠，3–4扇", "qty": 1, "ref": 85.2, "shop": "拼多多", "gid": "723825150554", "note": "起价85.2", "verified": null, "thumb": ""}, {"id": "W05", "name": "带灯镜梳妆台", "use": "左墙：开拍前化妆、整理发型", "src": "新购", "pri": "必须有", "spec": "小户型，带灯镜子", "qty": 1, "ref": 128, "shop": "拼多多", "gid": "731685056726", "note": "起价128", "verified": null, "thumb": ""}, {"id": "W06", "name": "移动挂衣架（待拍衣服）", "use": "右墙近门段：按拍摄顺序挂好下一套", "src": "新购", "pri": "必须有", "spec": "单杆带轮，黑色", "qty": 1, "ref": 22, "shop": "拼多多", "gid": "846739694217", "note": "起价22", "verified": null, "thumb": ""}, {"id": "W07", "name": "立式挂烫机", "use": "右墙近门段：衣服上镜前熨平", "src": "新购", "pri": "必须有", "spec": "苏泊尔立式双杆", "qty": 1, "ref": 198, "shop": "拼多多·苏泊尔", "gid": "920296169593", "note": "起价198；录制时关闭（噪音）", "verified": null, "thumb": ""}, {"id": "W08", "name": "窄鞋架", "use": "右墙近门段：拍全身要换鞋", "src": "新购", "pri": "必须有", "spec": "多层窄款", "qty": 1, "ref": 13.9, "shop": "拼多多", "gid": "1012765183170", "note": "起价13.9", "verified": null, "thumb": ""}, {"id": "W09", "name": "折叠凳（生活助理）", "use": "生活助理临时座位：递道具、熨衣服、拆快递", "src": "新购", "pri": "可后补", "spec": "便携加厚", "qty": 1, "ref": 17, "shop": "拼多多", "gid": "477008040764", "note": "起价17", "verified": null, "thumb": ""}, {"id": "W10", "name": "带开关插线板", "use": "灯光、电脑、挂烫机供电", "src": "新购", "pri": "必须有", "spec": "公牛，独立开关，长线", "qty": 2, "ref": 18.06, "shop": "拼多多·公牛", "gid": "613831066928", "note": "起价18.06", "verified": null, "thumb": ""}, {"id": "W11", "name": "地面压线槽", "use": "通道上的线缆防绊", "src": "新购", "pri": "必须有", "spec": "橡胶弧形", "qty": 2, "ref": 14.7, "shop": "拼多多", "gid": "250201880214", "note": "起价14.7", "verified": null, "thumb": ""}, {"id": "W12", "name": "灯架沙袋", "use": "压住L01/L04灯架脚，防碰倒", "src": "新购", "pri": "必须有", "spec": "志捷加厚", "qty": 2, "ref": 13, "shop": "拼多多", "gid": "372642844544", "note": "起价13", "verified": null, "thumb": ""}, {"id": "W13", "name": "门缝密封条", "use": "减少门外噪音", "src": "新购", "pri": "可后补", "spec": "门底密封条", "qty": 1, "ref": 9.8, "shop": "拼多多·立邦", "gid": "750003886292", "note": "起价9.8", "verified": null, "thumb": ""}, {"id": "W15", "name": "黑框拱形落地镜", "use": "右墙窗户旁，画面外：IP上镜前、穿搭段整理衣服", "src": "新购", "pri": "可后补", "spec": "法式金属边框拱形，约160×50cm，黑色", "qty": 1, "ref": 99, "shop": "拼多多", "gid": "1008375238700", "note": "起价69.9；160cm按该规格估约99元；斜放避免反射灯光", "verified": null, "thumb": ""}, {"id": "W14", "name": "衣柜、电脑（现有）", "use": "收纳与剪辑", "src": "现有", "pri": "必须有", "spec": "—", "qty": 1, "ref": 0, "shop": "—", "gid": "", "note": "无需购买", "verified": null, "thumb": ""}]};
+const REASONS = [
+  { k: "P1", t: "IP 坐的位置", where: "房间中轴线上，离背景墙约 1.5–1.8 m", why: "在中轴上，人、黑金画、相机连成一条线，画面左右平衡，竖屏 9:16 裁切也不会把人裁到边上。离墙 1.5 m 以上，主光照不到墙，背景自然暗一点、虚一点，人更突出。", not: "贴着墙坐，影子会投到墙上，背景和人一样亮，画面发平、像证件照。" },
+  { k: "P2", t: "单椅和坐姿", where: "丝绒圆背单椅朝向口播机位；IP 靠坐、翘腿、身体略侧", why: "丝绒圆背有包裹感，坐进去自然放松，像在跟朋友聊天；焦糖色和驼色西装同色系，整体高级。身体略侧，肩膀和腰线更有线条；脸转向镜头，正好迎着主光。", not: "端坐正对镜头像在面试；深沙发会让人陷进去，腰线看不见，衣服压皱。" },
+  { k: "P3", t: "边几的位置", where: "椅子左手边，比扶手低", why: "左手顺手拿咖啡和本期单品，讲到单品时拿起来举到胸前；边几比扶手低，不挡腰线和腿。它也是画面里的生活感道具。", not: "放在人前面会挡衣服；放太高会切断身体轮廓。" },
+  { k: "P4", t: "圆形地毯", where: "以椅子为圆心，直径 160 cm", why: "全身镜头会拍到地面，地毯把“座位区”定住，脚下有落点；黄麻底色加黑白格边，在深色背景前把座位区勾出来；还能吸收一部分回声。", not: "空地板在全身镜头里显得空，录音也会有回声。" },
+  { k: "P5", t: "主光（柔光箱）", where: "IP 前右 45°，靠窗户一侧，离人约 1.5 m，灯头高约 2 m 向下约 30°", why: "45° 侧前方打光，脸有立体感，又不会一半黑一半白；放在窗户一侧，光的方向和观众对“窗光”的直觉一致，看着自然；从上往下打，眼睛里有眼神光，下巴的阴影能收窄脸型。老师的灯光建议是“小空间灯离人近一点”：离得近更亮更柔，光也不会扩散到背景墙。", not: "正面打光脸会平；放太远光变硬，还会把背景墙一起照亮，失去层次。" },
+  { k: "P6", t: "辅光（平板灯）", where: "IP 前左约 1.8 m，亮度约主光一半", why: "只负责把主光造成的阴影补亮一点，保留约 2:1 的明暗，脸既不黑也不平。靠墙放，在画面外。", not: "辅光和主光一样亮，脸会没有立体感；完全不用，左脸会太暗。" },
+  { k: "P7", t: "背景暖光（灯带＋壁灯）", where: "书架每层、黑金画两侧", why: "深色背景上点几处 3000K 暖光，画面有前后层次和“有人住”的温度。人由主光打亮，背景只有点状暖光，形成人亮背景暗的关系。主光色温调到 4500–5000K，和暖光不打架。", not: "背景完全黑会像抠图；背景太亮会抢人的注意力。" },
+  { k: "P8", t: "摄像机（两个机位）", where: "口播机位：IP 斜前方约 15°、1.8 m、高 1.2 m；穿搭机位：中轴线 2.8 m、高 1.1 m", why: "口播是在讲内容，观众要看清脸和表情，所以用中景：头到大腿，衣服的上半身版型也看得清。从斜前方拍，人略侧着，比正对镜头更有杂志感，背景里书架、画、衣架一层层排开。讲到穿搭时再切到全身机位，从头到鞋完整展示。两个机位都避开了灯，画面里看不到任何设备。", not: "口播用远景，人太小、表情看不清，像在看访谈；正对中轴拍，画面呆板，背景只剩一面墙。" },
+  { k: "P9", t: "背景墙上的东西", where: "炭黑哑光墙纸；正中：黑金画＋两侧金色壁灯；左：黑色灯带书柜；右：金色衣架；右角：橄榄树", why: "画在头的正后上方，观众的视线会被拉回中心；左边书架是人设证据，右边衣架是品牌货架，左右分量相当。哑光墙纸不反光，深色墙有质感又不抢人。橄榄树叶片细小，比大叶植物轻盈，放在角落柔化墙角和遮光帘的边。", not: "东西堆在头后，会像头上长出东西；左右不平衡，画面会往一边倒。" },
+  { k: "P10", t: "遮光帘", where: "右墙窗户，深灰色，拍摄时全部拉上", why: "屏蔽自然光，只用人工光，每期颜色一样。深灰和背景墙同色系，在画面边缘也不突兀。纱帘保留，不拍的时候透气采光。", not: "靠自然光，上午、下午、阴天拍出来颜色都不一样，剪在一起会跳色。" },
+  { k: "P11", t: "落地镜", where: "右墙，窗户旁边，在画面外", why: "IP 上镜前、穿搭段转身时整理衣服。放在画外，避免镜面反射灯光和相机。", not: "放进画面里，镜子会反射柔光箱和相机，穿帮。" },
+  { k: "P12", t: "IP 助理工位", where: "入口墙右侧，相机右后方；人坐在桌后，面朝 IP", why: "桌子横放，IP 助理面朝拍摄区坐，越过显示器就能看到 IP，随时提醒走位、提词、换衣顺序；显示器背面朝拍摄区，屏幕的光不会照到 IP 或进画；位置在主光后方的侧边，不挡光；靠近门和插座，拿快递、充电方便。", not: "工位放在画面一侧，人走动会进画；放在主光前面会挡光。" },
+  { k: "P13", t: "换装化妆区与服装管理区", where: "左墙：梳妆台、换衣屏风、衣柜；右墙：落地镜、挂烫机、待拍衣架；鞋架在入口墙左侧", why: "动线是 衣柜 → 换衣角 → 梳妆台 → 椅子，一条线走完；待拍衣服按顺序挂好，熨烫、换鞋都在旁边。IP 每天换好几套衣服，房间里还有其他人，屏风保证隐私。", not: "没有换衣角，IP 要出门换衣服，拍一期要来回跑；衣服不熨，上镜全是褶。" },
+  { k: "P14", t: "门和通道", where: "门在入口墙；门到拍摄区留约 1 m 通道", why: "人进出、搬东西走通道，不穿过灯架和线缆；地面线缆用压线槽盖住，灯架脚压沙袋，防止绊倒、碰倒灯。", not: "通道被占，走动时碰到灯架，轻则改变灯位，重则砸坏设备。" },
+];
+const MARKS = { P1:[2.5,1.2], P2:[1.95,1.75], P3:[1.45,1.45], P4:[1.6,2.35], P5:[3.9,3.0], P6:[1.1,2.9], P7:[1.3,0.55], P8:[3.25,3.6], P9:[4.0,0.62], P10:[4.7,1.5], P11:[4.6,2.9], P12:[4.3,5.4], P13:[0.6,3.95], P14:[2.05,5.2] };
+
+(function lightbox() {
+  const lb = document.getElementById("lb"), im = document.getElementById("lb-img");
+  const close = () => { lb.hidden = true; im.src = ""; };
+  document.addEventListener("click", e => {
+    const t = e.target;
+    if (t.tagName === "IMG" && !t.closest(".compare") && !t.closest(".lb") && !t.classList.contains("thumb")) { im.src = t.src; im.alt = t.alt; lb.hidden = false; }
+  });
+  lb.addEventListener("click", close);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+})();
+
+(function compare() {
+  const box = document.getElementById("cmp"), r = document.getElementById("cmp-range");
+  r.addEventListener("input", () => box.style.setProperty("--pos", r.value + "%"));
+})();
+
+(function why() {
+  const svg = document.querySelector(".plan");
+  const K = 70, ox = 40, oy = 40, NS = "http://www.w3.org/2000/svg";
+  const marks = {};
+  for (const [k, [x, y]] of Object.entries(MARKS)) {
+    const g = document.createElementNS(NS, "g"); g.setAttribute("class", "pl-mark");
+    const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", ox + x * K); c.setAttribute("cy", oy + y * K); c.setAttribute("r", 10);
+    const t = document.createElementNS(NS, "text"); t.setAttribute("x", ox + x * K); t.setAttribute("y", oy + y * K + 3.5); t.setAttribute("text-anchor", "middle"); t.textContent = k.slice(1);
+    g.append(c, t); svg.append(g); marks[k] = g;
+  }
+  const box = document.getElementById("reasons");
+  let cur = null;
+  const pick = (k, btn) => {
+    if (cur) { marks[cur.k]?.classList.remove("on"); cur.btn.classList.remove("on"); }
+    marks[k]?.classList.add("on"); btn.classList.add("on"); cur = { k, btn };
+  };
+  REASONS.forEach((r, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "rs"; b.id = "why-" + r.k;
+    b.innerHTML = `<h3><span class="k">${r.k.slice(1)}</span><span></span></h3><div class="where"></div><dl><dt>为什么</dt><dd class="w"></dd><dt>不这样会</dt><dd class="n"></dd></dl>`;
+    b.querySelector("h3 span:last-child").textContent = r.t;
+    b.querySelector(".where").textContent = "位置：" + r.where;
+    b.querySelector(".w").textContent = r.why;
+    b.querySelector(".n").textContent = r.not;
+    b.addEventListener("click", () => pick(r.k, b));
+    b.addEventListener("mouseenter", () => pick(r.k, b));
+    box.append(b);
+    if (i === 0) pick(r.k, b);
+  });
+})();
+
+(function list() {
+  const prices = {};
+  let group = "scene";
+  let db = null;
+  const tbody = document.querySelector("#list-table tbody");
+  const budget = document.getElementById("budget");
+  const state = document.getElementById("save-state");
+  const fmt = n => "¥" + (Math.round(n * 100) / 100).toLocaleString("zh-CN", { maximumFractionDigits: 2 });
+  const unit = it => (prices[it.id] != null ? prices[it.id] : (it.verified != null ? it.verified : null));
+
+  function totals(g) {
+    let filled = 0, est = 0, missing = 0;
+    for (const it of LIST[g]) {
+      const u = unit(it);
+      if (u != null) { filled += u * it.qty; est += u * it.qty; }
+      else { est += it.ref * it.qty; if (it.qty > 0 && it.src === "新购") missing++; }
+    }
+    return { filled, est, missing };
+  }
+  function renderBudget() {
+    const t = totals(group);
+    if (group === "scene") {
+      const cap = 3000, pf = Math.min(100, t.filled / cap * 100), pe = Math.min(100, t.est / cap * 100);
+      budget.innerHTML = `<div class="bar" role="img" aria-label="预算使用"><i class="ref" style="width:${pe}%"></i><i style="width:${pf}%"></i></div>
+        <div class="budget-txt"><span>已核实：<b class="num">${fmt(t.filled)}</b></span><span>预计合计（未填按参考价）：<b class="num">${fmt(t.est)}</b></span><span>上限：<b class="num">¥3000</b></span><span>剩余：<b class="num">${fmt(cap - t.est)}</b></span><span>待核价：<b class="num">${t.missing}</b> 项</span></div>`;
+      document.getElementById("fact-total").textContent = fmt(t.est).replace(/\.\d+$/, "");
+    } else {
+      budget.innerHTML = `<div class="budget-txt"><span>已核实：<b class="num">${fmt(t.filled)}</b></span><span>预计合计：<b class="num">${fmt(t.est)}</b></span><span>待核价：<b class="num">${t.missing}</b> 项</span><span>不计入 3000 元</span></div>`;
+    }
+  }
+  function render() {
+    tbody.textContent = "";
+    for (const it of LIST[group]) {
+      const tr = document.createElement("tr");
+      const u = unit(it);
+      const link = it.gid ? `https://mobile.yangkeduo.com/goods.html?goods_id=${it.gid}` : "";
+      tr.innerHTML = `<td class="id"></td><td></td><td><div class="nm"></div><div class="use"></div></td><td class="spec-t"></td>
+        <td><span class="pill"></span><span class="pill"></span></td><td class="num"></td><td class="ref num"></td><td></td><td class="sub num"></td><td></td>`;
+      const td = tr.children;
+      td[0].textContent = it.id;
+      if (it.thumb) { const im = document.createElement("img"); im.className = "thumb"; im.src = it.thumb; im.alt = ""; im.loading = "lazy"; td[1].append(im); }
+      td[2].querySelector(".nm").textContent = it.name;
+      td[2].querySelector(".use").textContent = it.use;
+      td[3].textContent = it.spec;
+      const pills = td[4].querySelectorAll(".pill");
+      pills[0].textContent = it.src; pills[1].textContent = it.pri; if (it.pri === "必须有") pills[1].classList.add("must");
+      td[5].textContent = it.qty;
+      td[6].textContent = it.src === "现有" ? "—" : fmt(it.ref);
+      td[6].title = it.note;
+      if (it.src === "新购" && it.qty > 0) {
+        const inp = document.createElement("input");
+        inp.type = "number"; inp.min = "0"; inp.step = "0.01"; inp.inputMode = "decimal"; inp.id = "price-" + it.id;
+        inp.placeholder = "待填写"; inp.setAttribute("aria-label", it.name + " 实际单价");
+        if (u != null) { inp.value = u; inp.classList.add("filled"); }
+        inp.addEventListener("change", () => save(it, inp));
+        td[7].append(inp);
+      } else td[7].textContent = it.src === "现有" ? "无需购买" : "—";
+      const sub = (u != null ? u : it.ref) * it.qty;
+      td[8].textContent = it.src === "现有" ? "—" : fmt(sub);
+      if (u == null) td[8].classList.add("est");
+      if (link) { const a = document.createElement("a"); a.href = link; a.target = "_blank"; a.rel = "noopener"; a.textContent = "打开商品"; td[9].append(a); }
+      else td[9].textContent = "—";
+      tbody.append(tr);
+    }
+    renderBudget();
+  }
+  async function save(it, inp) {
+    const v = inp.value.trim() === "" ? null : Number(inp.value);
+    if (v != null && !(v >= 0)) { state.textContent = "请输入数字，例如 129.9"; return; }
+    prices[it.id] = v;
+    render();
+    if (!db) { state.textContent = "已在本页计算；当前打开方式无法保存到云端，刷新后会恢复。"; return; }
+    state.textContent = "保存中…";
+    try {
+      if (v == null) await db.collection("prices").doc(it.id).delete();
+      else await db.collection("prices").doc(it.id).set({ price: v, at: new Date().toISOString() });
+      state.textContent = `已保存：${it.id} ${it.name}`;
+    } catch (e) {
+      state.textContent = e && e.code === "invalid_argument" ? "你没有编辑权限，价格只在本页计算，不会保存。" : "保存失败，请稍后再填一次。";
+    }
+  }
+  document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+    group = b.dataset.g; render();
+  }));
+  render();
+  (async () => {
+    try {
+      db = await (window.claude?.use?.("db") ?? null);
+    } catch (e) { db = null; }
+    if (!db) { state.textContent = "填写的价格只在本页计算（当前打开方式不能保存）。"; return; }
+    const timer = setTimeout(() => { state.textContent = "正在连接保存服务，已填写的价格可能还没加载出来。"; }, 10000);
+    db.collection("prices").onSnapshot(snap => {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); if (state.textContent.startsWith("正在连接")) state.textContent = ""; }
+      for (const k of Object.keys(prices)) delete prices[k];
+      for (const d of snap.docs) { const p = d.data()?.price; if (typeof p === "number") prices[d.id] = p; }
+      const active = document.activeElement;
+      if (!(active && active.tagName === "INPUT" && active.id.startsWith("price-"))) render();
+      else renderBudget();
+    }, () => { clearTimeout(timer); state.textContent = "暂时连不上保存服务，填写的价格只在本页计算。"; });
+  })();
+})();
+</script>
